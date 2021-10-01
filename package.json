@@ -9,11 +9,20 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "firebase": "^9.0.2",
+    "lodash": "^4.17.21",
+    "materialize-css": "^1.0.0-rc.2",
     "vue": "^2.6.11",
+    "vue-firebase": "^1.0.8",
     "vue-router": "^3.2.0",
+    "vue2-google-maps": "^0.10.7",
+    "vuefire": "^2.2.5",
+    "vuetify": "^2.4.0",
     "vuex": "^3.4.0"
   },
   "devDependencies": {
+    "@mdi/font": "^6.1.95",
+    "@mdi/js": "^6.1.95",
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-plugin-router": "~4.5.0",
@@ -25,8 +34,11 @@
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-vue": "^6.2.2",
     "node-sass": "^4.12.0",
-    "sass-loader": "^8.0.2",
-    "vue-template-compiler": "^2.6.11"
+    "sass": "~1.32.0",
+    "sass-loader": "^10.0.0",
+    "vue-cli-plugin-vuetify": "~2.4.2",
+    "vue-template-compiler": "^2.6.11",
+    "vuetify-loader": "^1.7.0"
   },
   "eslintConfig": {
     "root": true,
@@ -40,7 +52,18 @@
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "rules": {}
+    "rules": {
+      "no-param-reassign": 0,
+      "import/extensions": [
+        "error",
+        "always",
+        {
+          "js": "never",
+          "jsx": "never",
+          "vue": "never"
+        }
+      ]
+    }
   },
   "browserslist": [
     "> 1%",

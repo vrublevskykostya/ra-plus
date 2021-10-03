@@ -378,10 +378,10 @@ export default {
       console.log({ month, place: place.id });
       console.log(this.orders);
     },
-    getMonthsByPlace(placeCode) {
+    getMonthsByPlace(placeId) {
       const preparedOrders = {};
       lodash
-        .filter(this.orders, (o) => o.place === placeCode && o.year === new Date().getFullYear())
+        .filter(this.orders, (o) => o.place.id === placeId && o.year === new Date().getFullYear())
         .forEach((o) => {
           preparedOrders[o.month] = {
             client: o.client,

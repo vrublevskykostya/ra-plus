@@ -1,36 +1,36 @@
 <template>
   <div>
-  <v-btn
-  @click="getMarkersPosition"
-  >
-    pos
-  </v-btn>
-  <GmapMap
-    :center="{lat:48.68583782012766, lng:26.590928198088818}"
-    :zoom="15"
-    map-type-id="terrain"
-    style="width: 100%; height: 600px"
-  >
-    <GmapMarker
-      :key="index"
-      v-for="(m, index) in markers"
-      :position="m.pos.position"
-      :clickable="true"
-      :draggable="true"
-      @click="center=m.position"
-      :icon="markerOptions"
-    />
-  </GmapMap>
+    <v-btn @click="getMarkersPosition">
+      pos
+    </v-btn>
+    <GmapMap
+      :center="{ lat: 48.68583782012766, lng: 26.590928198088818 }"
+      :zoom="15"
+      map-type-id="terrain"
+      style="width: 100%; height: 600px"
+    >
+      <GmapMarker
+        :key="index"
+        v-for="(m, index) in markers"
+        :position="m.position"
+        :clickable="true"
+        :draggable="true"
+        @click="center = m.position"
+        :icon="markerOptions"
+      />
+    </GmapMap>
   </div>
 </template>
 
 <script>
 import { gmapApi } from 'vue2-google-maps';
-const markerUrl = require('@/assets/iconboard.png');
 import { db } from '@/utills/db';
+
+const markerUrl = require('@/assets/iconboard.png');
 
 export default {
   name: 'BoardsMap',
+  places: null,
   data: () => ({
     pos: [],
     markerOptions: {
@@ -71,15 +71,16 @@ export default {
   }),
   computed: {
     google: gmapApi,
-   },
+  },
   methods: {
     getMarkersPosition() {
-      this.pos = this.places.map((places) => places.position);
-      console.log(this.pos);
+      const arr = this.places.map(({ x, y }) => ({ position: { lat: Number(x), lng: Number(y) } }));
+      console.log(arr);
+      this.markers = arr;
     },
     getPlaces() {
       this.pos = this.places;
-      console.log(this.pos)
+      console.log(this.pos);
     },
   },
   firestore: {
@@ -90,6 +91,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

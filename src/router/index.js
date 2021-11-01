@@ -8,6 +8,7 @@ import Contacts from '@/views/Contacts';
 import Login from '@/views/Login';
 import BoardsMap from '@/views/BoardsMap';
 import Clients from '@/views/Clients';
+import Construction from '@/views/Construction';
 
 Vue.use(VueRouter);
 
@@ -43,7 +44,7 @@ const routes = [
     component: Login,
   },
   {
-    path: '/boardsMap',
+    path: '/boardsmap',
     name: 'BoardsMap',
     component: BoardsMap,
   },
@@ -51,6 +52,11 @@ const routes = [
     path: '/clients',
     name: 'Clients',
     component: Clients,
+  },
+  {
+    path: '/construction',
+    name: 'Construction',
+    component: Construction,
   },
 ];
 

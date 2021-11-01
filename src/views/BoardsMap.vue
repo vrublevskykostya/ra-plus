@@ -1,87 +1,159 @@
 <template>
-  <div>
-    <v-btn @click="getMarkersPosition">
-      pos
-    </v-btn>
-    <GmapMap
-      :center="{ lat: 48.68583782012766, lng: 26.590928198088818 }"
-      :zoom="15"
-      map-type-id="terrain"
-      style="width: 100%; height: 600px"
+  <v-card>
+  <v-dialog v-model="drawer" max-width="600px">
+    <v-card  class="pt-2">
+      <v-card-text>
+        <span class="text-h6">{{ selectedPlace.address }}</span>
+      </v-card-text>
+      <v-container
+        fluid
+      >
+      <v-row class="d-flex justify-start align-start">
+        <v-col cols="7">
+          <v-img
+            @click="showImage"
+            class="rounded pointer"
+            src="https://picsum.photos/id/11/500/300"
+          ></v-img>
+        </v-col>
+        <v-col cols="5">
+          <v-card-text class="pa-0 text-h6">
+            {{ selectedPlace.type }}:
+            <span class="text-h6">
+            {{ selectedPlace.code }}
+            </span>
+          </v-card-text>
+          <hr>
+          <v-card-text class="pt-5">
+            Розмір: {{ selectedPlace.size }} ({{ selectedPlace.st }})
+          </v-card-text>
+          <v-card-text class="pt-1">
+            Підсвітка: {{ selectedPlace.backlight }} </v-card-text>
+          <v-card-text class="pt-1">
+            Вартість:
+            <span class="font-weight-bold">
+              {{ selectedPlace.price }} грн.
+            </span>
+          </v-card-text>
+        </v-col>
+
+      </v-row>
+      </v-container>
+      <v-card-text>
+        <v-container>
+          <v-row>
+
+          </v-row>
+        </v-container>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="blue darken-1" text @click="close">
+          Закрити
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+    <v-dialog v-model="image" max-width="800px">
+    <v-img
+      @click="closeImage"
+      class="rounded pointer"
+      src="https://picsum.photos/id/11/500/300"
     >
-      <GmapMarker
-        :key="index"
-        v-for="(m, index) in markers"
-        :position="m.position"
-        :clickable="true"
-        :draggable="true"
-        @click="center = m.position"
-        :icon="markerOptions"
-      />
-    </GmapMap>
-  </div>
+    </v-img>
+    </v-dialog>
+
+    </v-dialog>
+
+        <GmapMap
+          :center="center"
+          :zoom="15"
+          map-type-id="terrain"
+          style="width: 100%; height: 600px"
+        >
+          <GmapMarker
+            :key="index"
+            v-for="(m, index) in markers"
+            :position="m.positionGmap"
+            :clickable="true"
+            @click="selectPlaceItem(m)"
+            :icon="m.markerOption"
+          />
+        </GmapMap>
+      </v-card>
+
 </template>
 
 <script>
 import { gmapApi } from 'vue2-google-maps';
 import { db } from '@/utills/db';
 
-const markerUrl = require('@/assets/iconboard.png');
-
 export default {
   name: 'BoardsMap',
-  places: null,
   data: () => ({
-    pos: [],
-    markerOptions: {
-      url: markerUrl,
-      size: {
-        width: 80,
-        height: 80,
-        f: 'px',
-        b: 'px',
+    center: { lat: 48.68583782012766, lng: 26.590928198088818 },
+    places: [],
+    orders: [],
+    tempPlaces: {
+      "Сітілайт": {
+        error: "citylight_red.png",
+        yellow: "citylight_yellow.png",
+        green: "citylight_green.png"
       },
-      scaledSize: {
-        width: 80,
-        height: 80,
-        f: 'px',
-        b: 'px',
-      },
+      "Білборд": {
+        error: "billboard_red.png",
+        yellow: "billboard_yellow.png",
+        green: "billboard_green.png"
+      }
     },
-    markers: [
-      // {
-      //   position: {
-      //     lat: 48.68374788670835,
-      //     lng: 26.580770056116368,
-      //   },
-      // },
-      // {
-      //   position: {
-      //     lat: 48.67288790934487,
-      //     lng: 26.585989521677728,
-      //   },
-      // },
-      // {
-      //   position: {
-      //     lat: 48.68715547083254,
-      //     lng: 26.598442585753535,
-      //   },
-      // },
-    ],
+    drawer: false,
+    image: false,
+    group: null,
+    selectedPlace: {},
   }),
   computed: {
     google: gmapApi,
+    markers() {
+      return this.places
+        .map((place) => {
+          place.positionGmap = { lat: Number(place.x), lng: Number(place.y) };
+          place.markerOption = {
+            size: {
+              width: 50,
+              height: 50,
+              f: 'px',
+              b: 'px',
+            },
+            scaledSize: {
+              width: 50,
+              height: 50,
+              f: 'px',
+              b: 'px',
+            },
+          };
+          const order = this.orders.find((order) => {
+            return order.place.id === place.id
+          });
+          place.markerOption.url = this.tempPlaces[place.type][order?.status || "green"];
+          return place;
+        });
+    },
   },
   methods: {
-    getMarkersPosition() {
-      const arr = this.places.map(({ x, y }) => ({ position: { lat: Number(x), lng: Number(y) } }));
-      console.log(arr);
-      this.markers = arr;
+    selectPlaceItem(m) {
+      this.drawer = !this.drawer;
+      this.selectedPlace = m;
+      console.log(this.selectedPlace);
     },
-    getPlaces() {
-      this.pos = this.places;
-      console.log(this.pos);
+    close() {
+      this.drawer = false;
     },
+    showImage() {
+      this.image = !this.image;
+    },
+    closeImage() {
+      this.image = false;
+    }
   },
   firestore: {
     places: db.collection('places'),
@@ -91,4 +163,9 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.pointer {
+  cursor: pointer;
+}
+
+</style>

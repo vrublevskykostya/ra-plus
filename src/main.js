@@ -11,9 +11,11 @@ Vue.use(VueGoogleMaps, {
   load: {
     key: 'AIzaSyA8uadaAdSPYEoA5vHMOCjPzGuGo2MZQ8k',
     libraries: 'places',
+    storageBucket: 'gs://ra-plus.appspot.com',
   },
   installComponents: true,
 });
+
 Vue.config.productionTip = false;
 
 new Vue({

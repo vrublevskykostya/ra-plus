@@ -58,34 +58,36 @@ import { db } from '@/utills/db';
 export default {
   name: 'ReserveDialog',
   data: () => ({
-    reserveDialog: true,
     items: [],
     red: 'red',
     statusChecked: [
       {
         label: 'Зайнято',
         color: 'red',
-        value: 'value1',
+        value: 'red',
       },
       {
         label: 'Заброньовано',
-        color: 'orange',
-        value: 'value2',
+        color: 'yellow',
+        value: 'yellow',
       },
       {
         label: 'Вільно',
         color: 'success',
-        value: 'value3',
+        value: 'success',
       },
     ],
   }),
   methods: {
     getClients() {
-      this.items = this.clients.map((clients) => clients.name);
+      this.items = this.clients.map((clients) => { clients.name, clients.id};
       console.log(this.items);
     },
     closeDialog() {
       this.reserveDialog = false;
+    },
+    showReserveDialog() {
+      this.reserveDialog = true;
     },
   },
   firestore: {

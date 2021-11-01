@@ -1,6 +1,5 @@
 <template>
   <div>
-    <p>{{ placesWithOrders }}</p>
     <v-col>
       <v-tabs centered color="red white">
         <v-tab>
@@ -14,6 +13,12 @@
         </v-tab>
         <v-tab>
           Список клієнтів
+        </v-tab>
+        <v-tab>
+          Карта
+        </v-tab>
+        <v-tab>
+          Список конструкцій
         </v-tab>
 
         <v-tab-item>
@@ -77,8 +82,14 @@
                                 <v-text-field v-model="editedItem.code" label="Код"> </v-text-field>
                               </v-col>
                               <v-col cols="12" sm="6" md="4">
-                                <v-text-field v-model="editedItem.type" label="Тип конструкції">
-                                </v-text-field>
+                                <v-autocomplete
+                                  v-model="editedItem.type"
+                                  :items="constructions"
+                                  label="Тип конструкції"
+                                  item-text="name"
+                                  item-value="name"
+                                >
+                                </v-autocomplete>
                               </v-col>
                               <v-col cols="12" sm="6" md="4">
                                 <v-text-field v-model="editedItem.address" label="Адреса">
@@ -96,16 +107,20 @@
                                 </v-text-field>
                               </v-col>
                               <v-col cols="12" sm="6" md="4">
-                                <v-text-field v-model="editedItem.reserve" label="Бронювання">
-                                </v-text-field>
-                              </v-col>
-                              <v-col cols="12" sm="6" md="4">
                                 <v-text-field v-model="editedItem.size" label="Розмір">
                                 </v-text-field>
                               </v-col>
                               <v-col cols="12" sm="6" md="4">
                                 <v-text-field v-model="editedItem.backlight" label="Підсвітка">
                                 </v-text-field>
+                              </v-col>
+                              <v-col cols="12" sm="6" md="4">
+                                <v-text-field v-model="editedItem.price" label="Вартість">
+                                </v-text-field>
+                              </v-col>
+                              <v-col cols="12">
+                                <v-file-input v-model="editedItem.image" label="Фото">
+                                </v-file-input>
                               </v-col>
                             </v-row>
                           </v-container>
@@ -114,7 +129,7 @@
                         <v-card-actions>
                           <v-spacer></v-spacer>
                           <v-btn color="blue darken-1" text @click="close">
-                            Відміна
+                            Закрити
                           </v-btn>
                           <div v-if="editedIndex == -1">
                             <v-btn color="blue darken-1" text @click="addToPlaces">
@@ -134,9 +149,12 @@
                         <v-card-title class="text-h5">
                           Видалити об'єкт?
                         </v-card-title>
+                        <v-card-text class="text-h6">{{ selectedItem.code }}</v-card-text>
+                        <v-card-text>{{ selectedItem.type }}</v-card-text>
+                        <v-card-text>Адреса: {{ selectedItem.address }}</v-card-text>
                         <v-card-actions>
                           <v-spacer></v-spacer>
-                          <v-btn color="blue darken-1" text @click="dialogDel">Відміна</v-btn>
+                          <v-btn color="blue darken-1" text @click="dialogDel">Закрити</v-btn>
                           <v-btn color="blue darken-1" text @click="dialogOk(selectedItem)"
                             >Так
                           </v-btn>
@@ -153,21 +171,46 @@
                 </template>
                 <template v-slot:item.orders="{ item }">
                   <v-card min-width="400">
-                    <v-btn max-width="40" width="40" height="25" small>2021</v-btn>
                     <v-btn
-                      v-for="i in readyItemMonth"
-                      :key="i"
-                      :class="item.orders[i] ? item.orders[i].status : ''"
-                      min-width="20"
-                      width="20"
+                      max-width="40"
+                      width="40"
                       height="25"
                       small
-                      @click="item.orders[i] ? log(item.orders[i].client) : createOrder(i, item)"
+                      disabled
+                      text
                     >
-                      {{ i }}
+                      {{ arr[0].year }}
                     </v-btn>
-                    <v-btn max-width="40" width="40" height="25" small>
-                      2022
+                    <template v-for="yearObj in arr">
+                      <v-btn
+                        v-for="month in yearObj.months"
+                        :key="month"
+                        :class="
+                          item.orders[`y_${yearObj.year}`] &&
+                          item.orders[`y_${yearObj.year}`][`m_${month}`]
+                            ? item.orders[`y_${yearObj.year}`][`m_${month}`].status
+                            : ''
+                        "
+                        min-width="20"
+                        width="20"
+                        height="25"
+                        small
+                        @click="
+                          item.orders[`y_${yearObj.year}`] &&
+                          item.orders[`y_${yearObj.year}`][`m_${month}`]
+                            ? log(
+                                item.orders[`y_${yearObj.year}`] &&
+                                  item.orders[`y_${yearObj.year}`][`m_${month}`]
+                              )
+                            : createOrder(month, yearObj.year, item)
+                        "
+                      >
+                        {{ month }}
+                      </v-btn>
+                    </template>
+
+                    <v-btn max-width="40" width="40" height="25" small disabled text>
+                      {{ arr[1].year }}
                     </v-btn>
                   </v-card>
                 </template>
@@ -181,15 +224,10 @@
                   >
                     mdi-pencil
                   </v-icon>
-                  <v-icon small @click="getSelectedItem(item.id)">
+                  <v-icon small @click="getSelectedItem(item)">
                     mdi-delete
                   </v-icon>
                 </template>
-<!--                <template v-slot:no-data>-->
-<!--                  <v-btn color="primary" @click="initialize">-->
-<!--                    Reset-->
-<!--                  </v-btn>-->
-<!--                </template>-->
               </v-data-table>
             </v-card-text>
           </v-card>
@@ -213,7 +251,13 @@
           </v-card>
         </v-tab-item>
         <v-tab-item>
-          <Clients/>
+          <Clients />
+        </v-tab-item>
+        <v-tab-item>
+          <BoardsMap />
+        </v-tab-item>
+        <v-tab-item>
+          <Construction />
         </v-tab-item>
       </v-tabs>
     </v-col>
@@ -221,6 +265,102 @@
     <div class="app-page mt-10">
       <router-view />
     </div>
+    <v-dialog v-if="reserveDialog" v-model="reserveDialog" max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">{{ orderForCreate.place.code }}</span>
+        </v-card-title>
+        <v-card-title>
+          <span class="text-subtitle-2">{{ orderForCreate.place.address }}</span>
+        </v-card-title>
+
+        <v-card-text>
+          <v-container>
+            <v-row> </v-row>
+            <v-row align="center">
+              <v-col class="d-flex" cols="12" sm="10">
+                <v-autocomplete
+                  v-model="orderForCreate.client"
+                  :items="clients"
+                  label="Клієнт"
+                  item-text="name"
+                  item-value="id"
+                >
+                </v-autocomplete>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
+                <v-radio-group v-model="orderForCreate.status">
+                  <v-radio
+                    v-for="i in statusChecked"
+                    :key="i.id"
+                    :label="i.label"
+                    :color="i.color"
+                    :value="i.value"
+                  >
+                  </v-radio>
+                </v-radio-group>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" text @click="closeReserveDialog">
+            Закрити
+          </v-btn>
+          <v-btn color="blue darken-1" text @click="addOrderItem">
+            Зберегти
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="deleteOrder" max-width="600px">
+      <v-card>
+        <v-card-title>Назва клієнта: "{{ delClient.client.name }}"</v-card-title>
+        <v-spacer></v-spacer>
+        <v-card-text>Контактна особа: "{{ delClient.client.person }}"</v-card-text>
+        <v-card-text>Номер телефону: <a :href="`tel:${delClient.client.phone}`">{{ delClient.client.phone }}</a></v-card-text>
+        <v-card-text>Email: <a :href="`mailto:${delClient.client.email}`">{{ delClient.client.email }}</a></v-card-text>
+        <v-row class="ma-0">
+          <v-col class="ml-2">
+            <v-radio-group v-model="orderForCreate.status">
+              <template v-slot:label>
+                <div class="status-message">Змінити статус замовлення:</div>
+              </template>
+              <v-radio
+                v-for="i in statusChecked"
+                :key="i.id"
+                :default="i.status"
+                :label="i.label"
+                :color="i.color"
+                :value="i.value"
+              >
+              </v-radio>
+            </v-radio-group>
+          </v-col>
+        </v-row>
+        <template>
+        <v-card-actions>
+          <v-btn
+            color="blue darken-1" text @click="editOrderItem(delClient)">
+            Зберегти
+          </v-btn>
+          <v-btn
+            color="blue darken-1" text @click="delOrderItem(delClient.orderId)">
+            Видалити
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="blue darken-1" text @click="closeOrderItem()">
+            Закрити
+          </v-btn>
+        </v-card-actions>
+        </template>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -228,13 +368,52 @@
 import lodash from 'lodash';
 import { db } from '@/utills/db';
 import Clients from './Clients';
+import BoardsMap from './BoardsMap';
+import Construction from './Construction'
 
 export default {
   name: 'Services',
   data: () => ({
+    arr: [
+      {
+        year: new Date().getFullYear(),
+        months: [],
+      },
+      {
+        year: new Date().getFullYear() + 1,
+        months: [],
+      },
+    ],
+    reserveDialog: false,
+    deleteOrder: false,
     places: [],
     orders: [],
+    constructions: [],
+    delClient: {
+      client: {},
+    },
+    orderDialog: {
+      code: '',
+      address: '',
+      client: '',
+      status: '',
+      year: '',
+    },
     clients: [],
+    items: [],
+    red: 'red',
+    statusChecked: [
+      {
+        label: 'Зайнято',
+        color: 'red',
+        value: 'error',
+      },
+      {
+        label: 'Заброньовано',
+        color: 'yellow',
+        value: 'yellow',
+      }
+    ],
     tabs: [
       {
         title: 'Печатки',
@@ -264,6 +443,7 @@ export default {
       { text: 'Бронювання', value: 'orders' },
       { text: 'Розмір', value: 'size' },
       { text: 'Підсвітка', value: 'backlight' },
+      { text: 'Вартість', value: 'price' },
       { text: 'Дії', value: 'actions', sortable: false },
     ],
     tableItems: [],
@@ -275,9 +455,10 @@ export default {
       st: '',
       x: '',
       y: '',
-      reserve: '',
       size: '',
       backlight: '',
+      price: '',
+      image: '',
     },
     defaultItem: {
       code: '',
@@ -286,25 +467,45 @@ export default {
       st: '',
       x: '',
       y: '',
-      reserve: '',
       size: '',
       backlight: '',
+      price: '',
+      image: '',
+    },
+    orderForCreate: {
+      place: null,
+      month: null,
+      year: null,
+      status: null,
+      client: null,
     },
   }),
+  created() {
+    const currentMonth = new Date().getMonth() + 1;
+    for (let i = 1; i < 13; i += 1) {
+      if (i < currentMonth) {
+        this.arr[1].months.push(i);
+      } else {
+        this.arr[0].months.push(i);
+      }
+    }
+  },
   components: {
+    BoardsMap,
     Clients,
+    Construction,
   },
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? 'Додати новий запис' : 'Редагувати';
     },
-    readyItemMonth() {
-      const date = new Date();
-      const currentMonth = date.getMonth();
-      const newArr = this.months;
-      const temp = newArr.splice(currentMonth);
-      return ([...temp, ...newArr]);
-    },
+    // readyItemMonth() {
+    //   const date = new Date();
+    //   const currentMonth = date.getMonth();
+    //   const newArr = this.months;
+    //   const temp = newArr.splice(currentMonth);
+    //   return ([...temp, ...newArr]);
+    // },
     placesWithOrders() {
       return this.places.map((p) => {
         p.orders = this.getMonthsByPlace(p.id);
@@ -314,11 +515,16 @@ export default {
   },
 
   methods: {
+    closeReserveDialog() {
+      this.reserveDialog = false;
+    },
     showAddDialog() {
       this.editedIndex = -1;
     },
     close() {
       this.dialog = false;
+
+      this.editedItem = {};
     },
     editItem(item) {
       this.editedIndex = 1;
@@ -339,9 +545,10 @@ export default {
           st: item.st,
           x: item.x,
           y: item.y,
-          reserve: item.reserve,
           size: item.size,
           backlight: item.backlight,
+          price: item.price,
+          image: '',
         })
         .then(() => {
           console.log('user updated!');
@@ -349,11 +556,36 @@ export default {
           this.editedItem = {};
         });
     },
+    closeOrderItem() {
+      this.deleteOrder = false;
+    } ,
+    editOrderItem(item) {
+      console.log(item)
+      db.collection('orders')
+        .doc(item.orderId)
+        .update({
+          status: this.orderForCreate.status,
+        })
+        .then(() => {
+          console.log('order updated!');
+          this.deleteOrder = false;
+        });
+    },
+    delOrderItem(id) {
+      console.log(id)
+        db.collection('orders')
+          .doc(id)
+          .delete();
+        this.deleteOrder = false;
+    },
     dialogDel() {
       this.dialogDelete = false;
+      this.selectedItem = {};
+      this.editedItem = {};
     },
     getSelectedItem(item) {
       this.dialogDelete = true;
+      this.editedItem = item;
       this.selectedItem = item;
     },
     addToPlaces() {
@@ -365,44 +597,91 @@ export default {
         st: this.editedItem.st,
         x: this.editedItem.x,
         y: this.editedItem.y,
-        reserve: this.editedItem.reserve,
         size: this.editedItem.size,
         backlight: this.editedItem.backlight,
+        price: this.editedItem.price,
+        image: '',
       });
       this.dialog = false;
     },
-    log(client) {
-      console.log(client);
+    log(order) {
+      this.delClient = order;
+      this.deleteOrder = true;
+      console.log(order);
     },
-    createOrder(month, place) {
+    addOrderItem() {
+      db.collection('orders').add({
+        status: this.orderForCreate.status,
+        year: this.orderForCreate.year,
+        month: this.orderForCreate.month,
+        client: db.doc(`clients/${this.orderForCreate.client}`),
+        place: db.doc(`places/${this.orderForCreate.placeId}`),
+      });
+      this.reserveDialog = false;
+      console.log(this.orderForCreate.place.orders);
+    },
+    createOrder(month, year, place) {
+      this.orderForCreate.place = lodash.clone(place);
+      this.orderForCreate.month = month;
+      this.orderForCreate.year = year;
+      this.orderForCreate.placeId = place.id;
+      this.reserveDialog = true;
       console.log({ month, place: place.id });
       console.log(this.orders);
     },
     getMonthsByPlace(placeId) {
       const preparedOrders = {};
       lodash
-        .filter(this.orders, (o) => o.place.id === placeId && o.year === new Date().getFullYear())
+        .filter(
+          this.orders,
+          (o) => o.place.id === placeId
+            && (o.year === new Date().getFullYear()
+              || o.year === new Date().getFullYear() + 1),
+        )
         .forEach((o) => {
-          preparedOrders[o.month] = {
+          if (!preparedOrders[`y_${o.year}`]) preparedOrders[`y_${o.year}`] = {};
+          // preparedOrders.2021.6
+          preparedOrders[`y_${o.year}`][`m_${o.month}`] = {
             client: o.client,
             status: o.status,
+            orderId: o.id,
           };
+          // console.log(preparedOrders);
         });
       return preparedOrders;
     },
-    dialogOk(id) {
+    dialogOk(item) {
       db.collection('places')
-        .doc(id)
+        .doc(item.id)
         .delete();
       this.dialogDelete = null;
+    },
+    getClients() {
+      this.items = this.clients.map((clients) => ({ name: clients.name, id: clients.id }));
+      console.log(this.items);
+    },
+    closeDialog() {
+      console.log(this.orderForCreate);
+      this.reserveDialog = false;
+    },
+    showReserveDialog(item) {
+      this.selectedItem = item;
+      this.reserveDialog = true;
     },
   },
   firestore: {
     places: db.collection('places'),
     orders: db.collection('orders'),
     clients: db.collection('clients'),
+    constructions: db.collection('constructions'),
   },
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.status-message {
+  color: red;
+  font-weight: 500;
+  font-size: 1rem;
+}
+</style>

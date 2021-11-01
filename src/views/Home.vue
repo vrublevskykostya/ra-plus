@@ -1,21 +1,19 @@
 <template>
   <div>
-<!--  <v-row-->
-<!--    align="center"-->
-<!--    justify="center"-->
-<!--  >-->
-<!--  <h3>Home</h3>-->
-<!--  </v-row>-->
-  <ReserveDialog/>
+  <v-row
+    align="center"
+    justify="center"
+  >
+  <h3>Home</h3>
+  </v-row>
 </div>
 </template>
 
 <script>
-import ReserveDialog from '../components/ReserveDialog';
 
 export default {
   name: 'Home',
-  components: { ReserveDialog },
+  components: { },
   data: () => ({
     dialog: false,
     dialogDelete: false,

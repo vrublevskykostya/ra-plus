@@ -46,23 +46,13 @@
       "node": true
     },
     "extends": [
-      "plugin:vue/essential",
-      "@vue/airbnb"
+      "plugin:vue/essential"
     ],
     "parserOptions": {
       "parser": "babel-eslint"
     },
     "rules": {
-      "no-param-reassign": 0,
-      "import/extensions": [
-        "error",
-        "always",
-        {
-          "js": "never",
-          "jsx": "never",
-          "vue": "never"
-        }
-      ]
+      "no-param-reassign": 0
     }
   },
   "browserslist": [

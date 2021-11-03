@@ -65,7 +65,6 @@
                           class="mb-2"
                           v-bind="attrs"
                           v-on="on"
-                          @click="showAddDialog"
                         >
                           Додати
                         </v-btn>
@@ -609,6 +608,11 @@ export default {
       this.selectedItem = item;
     },
     async addToPlaces(item) {
+      const execCode = await this.getPlacesByCode(this.editedItem.code)
+      if(execCode) {
+        console.log('error')
+        return;
+      }
       const imageId = uuidv4();
       let url = null;
         const storage = getStorage();
@@ -703,6 +707,12 @@ export default {
       this.selectedItem = item;
       this.reserveDialog = true;
     },
+    async getPlacesByCode(code) {
+      const res = await db.collection('places')
+        .where('code', '==', code)
+        .get()
+      return res.docs.length
+    }
   },
   firestore: {
     places: db.collection('places'),

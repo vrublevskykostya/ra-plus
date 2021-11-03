@@ -12,6 +12,7 @@
     "firebase": "^9.0.2",
     "lodash": "^4.17.21",
     "materialize-css": "^1.0.0-rc.2",
+    "uuid": "^8.3.2",
     "vue": "^2.6.11",
     "vue-firebase": "^1.0.8",
     "vue-router": "^3.2.0",

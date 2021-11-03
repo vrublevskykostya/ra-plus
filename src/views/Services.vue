@@ -119,8 +119,30 @@
                                 </v-text-field>
                               </v-col>
                               <v-col cols="12">
-                                <v-file-input v-model="editedItem.image" label="Фото">
+                                <v-file-input v-if="!editedItem.image" v-model="editedItem.image" label="Фото">
                                 </v-file-input>
+                                <v-img
+                                  max-width="100"
+                                  v-else
+                                  class="rounded pa-0"
+                                  :src="editedItem.image"
+                                >
+                                  <v-btn
+                                    absolute
+                                    right
+                                    max-width="20"
+                                    max-height="20"
+                                    class="mt-2 mr-0 close-btn"
+                                    fab
+                                    color="white"
+                                    x-small
+                                    @click="deleteImage(editedItem)"
+                                  >
+                                    <v-icon dark>
+                                      mdi-close
+                                    </v-icon>
+                                  </v-btn>
+                                </v-img>
                               </v-col>
                             </v-row>
                           </v-container>
@@ -132,7 +154,7 @@
                             Закрити
                           </v-btn>
                           <div v-if="editedIndex == -1">
-                            <v-btn color="blue darken-1" text @click="addToPlaces">
+                            <v-btn color="blue darken-1" text @click="addToPlaces(selectedItem)">
                               Зберегти
                             </v-btn>
                           </div>
@@ -276,7 +298,6 @@
 
         <v-card-text>
           <v-container>
-            <v-row> </v-row>
             <v-row align="center">
               <v-col class="d-flex" cols="12" sm="10">
                 <v-autocomplete
@@ -298,6 +319,7 @@
                     :label="i.label"
                     :color="i.color"
                     :value="i.value"
+                    :checked="i.checked"
                   >
                   </v-radio>
                 </v-radio-group>
@@ -319,11 +341,11 @@
     </v-dialog>
     <v-dialog v-model="deleteOrder" max-width="600px">
       <v-card>
-        <v-card-title>Назва клієнта: "{{ delClient.client.name }}"</v-card-title>
+        <v-card-title class="status-message">Назва клієнта: "{{ delClient.client.name }}"</v-card-title>
         <v-spacer></v-spacer>
-        <v-card-text>Контактна особа: "{{ delClient.client.person }}"</v-card-text>
-        <v-card-text>Номер телефону: <a :href="`tel:${delClient.client.phone}`">{{ delClient.client.phone }}</a></v-card-text>
-        <v-card-text>Email: <a :href="`mailto:${delClient.client.email}`">{{ delClient.client.email }}</a></v-card-text>
+        <v-card-text>Контактна особа: <span class="text-order-dialog">{{ delClient.client.person }}</span></v-card-text>
+        <v-card-text>Номер телефону: <a class="text-order-dialog" :href="`tel:${delClient.client.phone}`"><span class="text-order-dialog">{{ delClient.client.phone }}</span></a></v-card-text>
+        <v-card-text>Email: <span ><a class="text-order-dialog-email" :href="`mailto:${delClient.client.email}`">{{ delClient.client.email }}</a></span></v-card-text>
         <v-row class="ma-0">
           <v-col class="ml-2">
             <v-radio-group v-model="orderForCreate.status">
@@ -370,6 +392,8 @@ import { db } from '@/utills/db';
 import Clients from './Clients';
 import BoardsMap from './BoardsMap';
 import Construction from './Construction'
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { v4 as uuidv4 } from 'uuid';
 
 export default {
   name: 'Services',
@@ -407,26 +431,14 @@ export default {
         label: 'Зайнято',
         color: 'red',
         value: 'error',
+        checked: true,
       },
       {
         label: 'Заброньовано',
         color: 'yellow',
         value: 'yellow',
+        checked: null,
       }
-    ],
-    tabs: [
-      {
-        title: 'Печатки',
-        route: '/boardsMap',
-      },
-      {
-        title: 'Зовнішня реклама',
-        route: '/boardsMap',
-      },
-      {
-        title: 'Реклама в ліфтах',
-        route: '/boardsMap',
-      },
     ],
     months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     dialog: false,
@@ -533,7 +545,15 @@ export default {
       this.dialog = true;
       console.log(item);
     },
-    showEditItem(item) {
+    async showEditItem(item) {
+      const imageId = uuidv4();
+      let url = null;
+      if(item.image) {
+        const storage = getStorage();
+        const storageRef = ref(storage, imageId);
+        await uploadBytes(storageRef, item.image)
+        url = await getDownloadURL(ref(storage, imageId))
+      }
       this.dialog = true;
       this.editedItem = item;
       db.collection('places')
@@ -548,7 +568,7 @@ export default {
           size: item.size,
           backlight: item.backlight,
           price: item.price,
-          image: '',
+          image: url || null,
         })
         .then(() => {
           console.log('user updated!');
@@ -588,7 +608,13 @@ export default {
       this.editedItem = item;
       this.selectedItem = item;
     },
-    addToPlaces() {
+    async addToPlaces(item) {
+      const imageId = uuidv4();
+      let url = null;
+        const storage = getStorage();
+        const storageRef = ref(storage, imageId);
+        await uploadBytes(storageRef, item.image)
+        url = await getDownloadURL(ref(storage, imageId))
       this.editedIndex = 0;
       db.collection('places').add({
         code: this.editedItem.code,
@@ -600,9 +626,18 @@ export default {
         size: this.editedItem.size,
         backlight: this.editedItem.backlight,
         price: this.editedItem.price,
-        image: '',
+        image: url || null,
       });
       this.dialog = false;
+    },
+    deleteImage(item) {
+      const storage = getStorage();
+      const desertRef = ref(storage, item.image);
+      deleteObject(desertRef).then(() => {
+        item.image = null;
+      }).catch((error) => {
+        console.log('not delete')
+      });
     },
     log(order) {
       this.delClient = order;
@@ -683,5 +718,23 @@ export default {
   color: red;
   font-weight: 500;
   font-size: 1rem;
+}
+.text-order-dialog {
+  text-decoration: none;
+  text-transform: uppercase;
+  color: #272727;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.text-order-dialog-email {
+  text-decoration: none;
+  color: #272727;
+  font-weight: 600;
+  font-style: italic;
+  font-size: 1.1rem;
+}
+.close-btn {
+  color: red;
+
 }
 </style>

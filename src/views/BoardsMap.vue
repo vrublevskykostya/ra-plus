@@ -13,7 +13,7 @@
           <v-img
             @click="showImage"
             class="rounded pointer"
-            src="https://picsum.photos/id/11/500/300"
+            :src="selectedPlace.image"
           ></v-img>
         </v-col>
         <v-col cols="5">
@@ -58,7 +58,7 @@
     <v-img
       @click="closeImage"
       class="rounded pointer"
-      src="https://picsum.photos/id/11/500/300"
+      :src="selectedPlace.image"
     >
     </v-img>
     </v-dialog>
@@ -95,16 +95,9 @@ export default {
     places: [],
     orders: [],
     tempPlaces: {
-      "Сітілайт": {
-        error: "citylight_red.png",
-        yellow: "citylight_yellow.png",
-        green: "citylight_green.png"
-      },
-      "Білборд": {
         error: "billboard_red.png",
         yellow: "billboard_yellow.png",
         green: "billboard_green.png"
-      }
     },
     drawer: false,
     image: false,
@@ -134,7 +127,7 @@ export default {
           const order = this.orders.find((order) => {
             return order.place.id === place.id
           });
-          place.markerOption.url = this.tempPlaces[place.type][order?.status || "green"];
+          place.markerOption.url = this.tempPlaces[order?.status || "green"];
           return place;
         });
     },

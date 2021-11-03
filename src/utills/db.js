@@ -6,12 +6,12 @@ import 'firebase/compat/auth';
 
 const fb = firebase.initializeApp({
   projectId: 'ra-plus',
-  apiKey: "AIzaSyAiCXlHdhrU8oZ3Vv-u9kQdhvBAhI8znPU"
-})
-
+  apiKey: 'AIzaSyAiCXlHdhrU8oZ3Vv-u9kQdhvBAhI8znPU',
+  storageBucket: 'gs://ra-plus.appspot.com',
+});
 
 export const db = fb.firestore();
-export const auth = fb.auth()
+export const auth = fb.auth();
 // Export types that exists in Firestore
 // This is not always necessary, but it's used in other examples
 const { Timestamp, GeoPoint } = firebase.firestore;

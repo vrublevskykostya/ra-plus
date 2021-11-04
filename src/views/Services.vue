@@ -97,18 +97,18 @@
                               <v-col cols="12" sm="6" md="4">
                                 <v-text-field v-model="editedItem.st" label="Ст."> </v-text-field>
                               </v-col>
+                              <v-col cols="12" sm="6" md="4">
+                                <v-text-field v-model="editedItem.position" label="Коорд.">
+                                </v-text-field>
+                              </v-col>
 <!--                              <v-col cols="12" sm="6" md="4">-->
-<!--                                <v-text-field v-model="editedItem.position" label="Коорд.">-->
+<!--                                <v-text-field v-model="editedItem.x" label="Координати (X)">-->
 <!--                                </v-text-field>-->
 <!--                              </v-col>-->
-                              <v-col cols="12" sm="6" md="4">
-                                <v-text-field v-model="editedItem.x" label="Координати (X)">
-                                </v-text-field>
-                              </v-col>
-                              <v-col cols="12" sm="6" md="4">
-                                <v-text-field v-model="editedItem.y" label="Координати (Y)">
-                                </v-text-field>
-                              </v-col>
+<!--                              <v-col cols="12" sm="6" md="4">-->
+<!--                                <v-text-field v-model="editedItem.y" label="Координати (Y)">-->
+<!--                                </v-text-field>-->
+<!--                              </v-col>-->
                               <v-col cols="12" sm="6" md="4">
                                 <v-text-field v-model="editedItem.size" label="Розмір">
                                 </v-text-field>
@@ -487,8 +487,9 @@ export default {
       type: '',
       address: '',
       st: '',
-      x: '',
-      y: '',
+      position: '',
+      // x: '',
+      // y: '',
       size: '',
       backlight: '',
       price: '',
@@ -499,8 +500,9 @@ export default {
       type: '',
       address: '',
       st: '',
-      x: '',
-      y: '',
+      position: '',
+      // x: '',
+      // y: '',
       size: '',
       backlight: '',
       price: '',
@@ -591,8 +593,9 @@ export default {
           type: item.type,
           address: item.address,
           st: item.st,
-          x: item.x,
-          y: item.y,
+          // position: this.transformCoords(this.editedItem.position),
+          // x: item.x,
+          // y: item.y,
           size: item.size,
           backlight: item.backlight,
           price: item.price,
@@ -655,14 +658,22 @@ export default {
         type: this.editedItem.type,
         address: this.editedItem.address,
         st: this.editedItem.st,
-        x: this.editedItem.x,
-        y: this.editedItem.y,
+        position: this.transformCoords(this.editedItem.position),
+        // x: this.editedItem.x,
+        // y: this.editedItem.y,
         size: this.editedItem.size,
         backlight: this.editedItem.backlight,
         price: this.editedItem.price,
         image: url || null,
       });
       this.dialog = false;
+    },
+    transformCoords(coords) {
+      if(typeof coords === "string") {
+        const [x, y=0] = coords.split(", ")
+        return {x, y}
+      }
+      return {x:0, y:0}
     },
     deleteImage(item) {
       const storage = getStorage();

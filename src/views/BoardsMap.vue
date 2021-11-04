@@ -109,7 +109,7 @@ export default {
     markers() {
       return this.places
         .map((place) => {
-          place.positionGmap = { lat: Number(place.x), lng: Number(place.y) };
+          place.positionGmap = { lat: Number(place?.position?.x), lng: Number(place?.position?.y) };
           place.markerOption = {
             size: {
               width: 50,

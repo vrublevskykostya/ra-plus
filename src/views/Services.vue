@@ -97,10 +97,10 @@
                               <v-col cols="12" sm="6" md="4">
                                 <v-text-field v-model="editedItem.st" label="Ст."> </v-text-field>
                               </v-col>
-                              <v-col cols="12" sm="6" md="4">
-                                <v-text-field v-model="editedItem.position" label="Коорд.">
-                                </v-text-field>
-                              </v-col>
+<!--                              <v-col cols="12" sm="6" md="4">-->
+<!--                                <v-text-field v-model="editedItem.position" label="Коорд.">-->
+<!--                                </v-text-field>-->
+<!--                              </v-col>-->
                               <v-col cols="12" sm="6" md="4">
                                 <v-text-field v-model="editedItem.x" label="Координати (X)">
                                 </v-text-field>
@@ -487,7 +487,7 @@ export default {
       type: '',
       address: '',
       st: '',
-      position: [],
+      // position: [],
       x: '',
       y: '',
       size: '',
@@ -500,7 +500,7 @@ export default {
       type: '',
       address: '',
       st: '',
-      position: [],
+      // position: [],
       x: '',
       y: '',
       size: '',

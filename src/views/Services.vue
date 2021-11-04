@@ -487,7 +487,6 @@ export default {
       type: '',
       address: '',
       st: '',
-      // position: [],
       x: '',
       y: '',
       size: '',
@@ -500,7 +499,6 @@ export default {
       type: '',
       address: '',
       st: '',
-      // position: [],
       x: '',
       y: '',
       size: '',
@@ -570,12 +568,12 @@ export default {
       console.log(item);
     },
     async showEditItem(item) {
-      // const execCode = await this.getPlacesByCode(this.editedItem.code)
-      // if(execCode) {
-      //   this.text = 'Такий код уже існує. Введіть інший!';
-      //   this.snackbar = true;
-      //   return;
-      // }
+      const execCode = await this.getPlacesByCode(this.editedItem.code)
+      if(execCode > 1) {
+        this.text = 'Такий код уже існує. Введіть інший!';
+        this.snackbar = true;
+        return;
+      }
       const imageId = uuidv4();
       let url = null;
       if(item.image) {
@@ -593,7 +591,6 @@ export default {
           type: item.type,
           address: item.address,
           st: item.st,
-          position: [item.position],
           x: item.x,
           y: item.y,
           size: item.size,
@@ -658,7 +655,6 @@ export default {
         type: this.editedItem.type,
         address: this.editedItem.address,
         st: this.editedItem.st,
-        position: [item.position],
         x: this.editedItem.x,
         y: this.editedItem.y,
         size: this.editedItem.size,

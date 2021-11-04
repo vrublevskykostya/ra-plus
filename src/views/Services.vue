@@ -98,6 +98,10 @@
                                 <v-text-field v-model="editedItem.st" label="Ст."> </v-text-field>
                               </v-col>
                               <v-col cols="12" sm="6" md="4">
+                                <v-text-field v-model="editedItem.position" label="Коорд.">
+                                </v-text-field>
+                              </v-col>
+                              <v-col cols="12" sm="6" md="4">
                                 <v-text-field v-model="editedItem.x" label="Координати (X)">
                                 </v-text-field>
                               </v-col>
@@ -123,18 +127,16 @@
                                 <v-img
                                   max-width="100"
                                   v-else
-                                  class="rounded pa-0"
+                                  class="rounded pa-0 del-image"
                                   :src="editedItem.image"
                                 >
                                   <v-btn
                                     absolute
-                                    right
-                                    max-width="20"
-                                    max-height="20"
-                                    class="mt-2 mr-0 close-btn"
-                                    fab
+                                    width="100%"
+                                    height="100%"
+                                    text
+                                    class="close-btn"
                                     color="white"
-                                    x-small
                                     @click="deleteImage(editedItem)"
                                   >
                                     <v-icon dark>
@@ -382,6 +384,24 @@
         </template>
       </v-card>
     </v-dialog>
+    <v-snackbar
+      centered
+      color="red"
+      v-model="snackbar"
+      :timeout="timeout"
+    >
+      {{ text }}
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click="snackbar = false"
+        >
+          Закрити
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -407,6 +427,9 @@ export default {
         months: [],
       },
     ],
+    snackbar: false,
+    text: '',
+    timeout: 2000,
     reserveDialog: false,
     deleteOrder: false,
     places: [],
@@ -449,8 +472,8 @@ export default {
       { text: 'Тип конструкції', value: 'type' },
       { text: 'Адреса', value: 'address' },
       { text: 'Ст.', value: 'st' },
-      { text: '"X"', value: 'x' },
-      { text: '"Y"', value: 'y' },
+      // { text: '"X"', value: 'x' },
+      // { text: '"Y"', value: 'y' },
       { text: 'Бронювання', value: 'orders' },
       { text: 'Розмір', value: 'size' },
       { text: 'Підсвітка', value: 'backlight' },
@@ -464,6 +487,7 @@ export default {
       type: '',
       address: '',
       st: '',
+      position: [],
       x: '',
       y: '',
       size: '',
@@ -476,6 +500,7 @@ export default {
       type: '',
       address: '',
       st: '',
+      position: [],
       x: '',
       y: '',
       size: '',
@@ -545,6 +570,12 @@ export default {
       console.log(item);
     },
     async showEditItem(item) {
+      // const execCode = await this.getPlacesByCode(this.editedItem.code)
+      // if(execCode) {
+      //   this.text = 'Такий код уже існує. Введіть інший!';
+      //   this.snackbar = true;
+      //   return;
+      // }
       const imageId = uuidv4();
       let url = null;
       if(item.image) {
@@ -562,6 +593,7 @@ export default {
           type: item.type,
           address: item.address,
           st: item.st,
+          position: [item.position],
           x: item.x,
           y: item.y,
           size: item.size,
@@ -610,7 +642,8 @@ export default {
     async addToPlaces(item) {
       const execCode = await this.getPlacesByCode(this.editedItem.code)
       if(execCode) {
-        console.log('error')
+        this.text = 'Такий код уже існує. Введіть інший!'
+        this.snackbar = true;
         return;
       }
       const imageId = uuidv4();
@@ -625,6 +658,7 @@ export default {
         type: this.editedItem.type,
         address: this.editedItem.address,
         st: this.editedItem.st,
+        position: [item.position],
         x: this.editedItem.x,
         y: this.editedItem.y,
         size: this.editedItem.size,
@@ -648,7 +682,14 @@ export default {
       this.deleteOrder = true;
       console.log(order);
     },
-    addOrderItem() {
+    async addOrderItem() {
+      const execClient = await this.getOrdersByClient(this.orderForCreate.client)
+      console.log(execClient)
+      if(!execClient) {
+        this.text = 'Оберіть клієнта!'
+        this.snackbar = true;
+        return;
+      }
       db.collection('orders').add({
         status: this.orderForCreate.status,
         year: this.orderForCreate.year,
@@ -712,6 +753,13 @@ export default {
         .where('code', '==', code)
         .get()
       return res.docs.length
+    },
+    async getOrdersByClient(client) {
+      const res = await db.collection('orders')
+        .where('client', '==', null)
+        .get()
+      console.log(client)
+      return client
     }
   },
   firestore: {
@@ -743,8 +791,21 @@ export default {
   font-style: italic;
   font-size: 1.1rem;
 }
+.del-image {
+  position:relative;
+}
+.del-image:hover {
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0.7;
+}
 .close-btn {
-  color: red;
-
+  position: absolute;
+  background: rgba(0, 0, 0, 0);
+  width: 100%;
+  height: 100%;
+  margin-top: 10px;
+}
+.close-btn:hover {
+  display: block;
 }
 </style>
